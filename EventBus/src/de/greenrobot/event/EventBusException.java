@@ -17,7 +17,9 @@ package de.greenrobot.event;
 
 /**
  * An {@link RuntimeException} thrown in cases something went wrong inside EventBus.
- * 
+ *
+ * <br/>
+ * 封装于 RuntimeException 之上的 Exception，只是覆盖构造函数，相当于一个标记，标记是属于 EventBus 的 Exception。
  * @author Markus
  * 
  */

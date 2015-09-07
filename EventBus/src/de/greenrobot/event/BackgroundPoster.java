@@ -19,7 +19,11 @@ import android.util.Log;
 
 /**
  * Posts events in background.
- * 
+ * <br/>
+ * <br/>
+ * 事件 Background 处理，对应ThreadMode.BackgroundThread，继承自 Runnable。enqueue 函数将事件放到队列中，
+ * 并调用线程池执行当前任务，在 run 函数从队列中取事件，invoke 事件响应函数处理。与 AsyncPoster.java 不同的是，
+ * BackgroundPoster 中的任务只在同一个线程中依次执行，而不是并发执行。
  * @author Markus
  */
 final class BackgroundPoster implements Runnable {

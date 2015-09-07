@@ -15,9 +15,21 @@
  */
 package de.greenrobot.event;
 
+/**
+ * 订阅者相关信息,包括 subscriber 对象、事件响应方法 SubscriberMethod、优先级 priority。
+ */
 final class Subscription {
+    /**
+     * 订阅者
+     */
     final Object subscriber;
+    /**
+     * 订阅者方法相关信息
+     */
     final SubscriberMethod subscriberMethod;
+    /**
+     * 优先级
+     */
     final int priority;
     /**
      * Becomes false as soon as {@link EventBus#unregister(Object)} is called, which is checked by queued event delivery

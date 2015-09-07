@@ -38,8 +38,15 @@ class SubscriberMethodFinder {
     private static final int SYNTHETIC = 0x1000;
 
     private static final int MODIFIERS_IGNORE = Modifier.ABSTRACT | Modifier.STATIC | BRIDGE | SYNTHETIC;
+
+    /**
+     * 每个类对应的响应函数列表，因为类一般不会变，所以保留缓存
+     */
     private static final Map<String, List<SubscriberMethod>> methodCache = new HashMap<String, List<SubscriberMethod>>();
 
+    /**
+     * 属性表示跳过哪些类中非法以 onEvent 开头的函数检查，若不跳过则会抛出异常。
+     */
     private final Map<Class<?>, Class<?>> skipMethodVerificationForClasses;
 
     SubscriberMethodFinder(List<Class<?>> skipMethodVerificationForClassesList) {
@@ -51,13 +58,20 @@ class SubscriberMethodFinder {
         }
     }
 
+    /**
+     * 先根据订阅者类名查找当前订阅者所有事件响应函数
+     * @param subscriberClass 订阅者类
+     * @return 订阅者类里面包含的响应方法
+     */
     List<SubscriberMethod> findSubscriberMethods(Class<?> subscriberClass) {
         String key = subscriberClass.getName();
-        List<SubscriberMethod> subscriberMethods;
+        List<SubscriberMethod> subscriberMethods;//要返回的订阅者的所有响应参数
         synchronized (methodCache) {
+            //从缓存列表里面尝试获得缓存
             subscriberMethods = methodCache.get(key);
         }
         if (subscriberMethods != null) {
+            //判断是否有缓存，有缓存则直接返回
             return subscriberMethods;
         }
         subscriberMethods = new ArrayList<SubscriberMethod>();
@@ -67,19 +81,23 @@ class SubscriberMethodFinder {
         while (clazz != null) {
             String name = clazz.getName();
             if (name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("android.")) {
-                // Skip system classes, this just degrades performance
+                // Skip system classes, this just degrades performance,过滤掉系统类
                 break;
             }
 
             // Starting with EventBus 2.2 we enforced methods to be public (might change with annotations again)
+            //通过反射，获得订阅者类的所有方法。
             Method[] methods = clazz.getDeclaredMethods();
             for (Method method : methods) {
                 String methodName = method.getName();
                 if (methodName.startsWith(ON_EVENT_METHOD_NAME)) {
                     int modifiers = method.getModifiers();
                     if ((modifiers & Modifier.PUBLIC) != 0 && (modifiers & MODIFIERS_IGNORE) == 0) {
-                        Class<?>[] parameterTypes = method.getParameterTypes();
-                        if (parameterTypes.length == 1) {
+                        //订阅者响应方法只能是public的，并且不能被abstract、static等修饰
+
+
+                        Class<?>[] parameterTypes = method.getParameterTypes();//获得参数类型列表
+                        if (parameterTypes.length == 1) {//订阅者响应方法里面只能有一个参数
                             String modifierString = methodName.substring(ON_EVENT_METHOD_NAME.length());
                             ThreadMode threadMode;
                             if (modifierString.length() == 0) {
@@ -97,13 +115,15 @@ class SubscriberMethodFinder {
                                     throw new EventBusException("Illegal onEvent method, check for typos: " + method);
                                 }
                             }
-                            Class<?> eventType = parameterTypes[0];
+                            //获取参数类型，其实就是接收事件的类型
+                            Class<?> eventType = parameterTypes[0];//第一个参数
                             methodKeyBuilder.setLength(0);
                             methodKeyBuilder.append(methodName);
                             methodKeyBuilder.append('>').append(eventType.getName());
                             String methodKey = methodKeyBuilder.toString();
                             if (eventTypesFound.add(methodKey)) {
                                 // Only add if not already found in a sub class
+                                //先循环子类的响应方法，再循环父类的响应方法，如果子类中已经添加过了，那么父类的会被忽略掉。
                                 subscriberMethods.add(new SubscriberMethod(method, threadMode, eventType));
                             }
                         }
@@ -113,13 +133,13 @@ class SubscriberMethodFinder {
                     }
                 }
             }
-            clazz = clazz.getSuperclass();
+            clazz = clazz.getSuperclass();//再遍历父类的所有方法
         }
-        if (subscriberMethods.isEmpty()) {
+        if (subscriberMethods.isEmpty()) {//没有相应的响应函数
             throw new EventBusException("Subscriber " + subscriberClass + " has no public methods called "
                     + ON_EVENT_METHOD_NAME);
         } else {
-            synchronized (methodCache) {
+            synchronized (methodCache) {//该方法执行一次后，将结果放入缓存中，再次调用时候直接从缓存列表拿
                 methodCache.put(key, subscriberMethods);
             }
             return subscriberMethods;

@@ -17,7 +17,9 @@ package de.greenrobot.event;
 
 /**
  * This Event is posted by EventBus when no subscriber is found for a posted event.
- * 
+ *
+ * <br/>
+ * 当没有事件处理函数对事件处理时发送的 EventBus 内部自定义事件，通过 post 发送，订阅者可自行订阅这类事件进行处理。
  * @author Markus
  */
 public final class NoSubscriberEvent {

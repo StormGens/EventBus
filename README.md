@@ -1,3 +1,17 @@
+EventBus中文注释
+======
+嗨，本项目只是再代码中加入了中文注释，并且引用一篇还不错的源码分析文章。
+
+文章合源码一起看，一定会对你分析EventBus的实现原理有很大帮助。
+
+如有哪里不准确的，欢迎指出。
+
+[源码分析文章](http://www.codekk.com/open-source-project-analysis/detail/Android/Trinea/EventBus%20%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90).
+
+
+
+
+
 EventBus
 ========
 EventBus is publish/subscribe event bus optimized for Android.<br/>

@@ -17,6 +17,10 @@ package de.greenrobot.event;
 
 import java.lang.reflect.Method;
 
+/**
+ *订阅者事件响应函数信息，包括响应方法、线程 Mode、事件类型以及一个用来比较 SubscriberMethod是否相等的特征值
+ * methodString 共四个变量，其中methodString 由${methodClassName}#${methodName}(${eventTypeClassName}组合而成。
+ */
 final class SubscriberMethod {
     final Method method;
     final ThreadMode threadMode;
